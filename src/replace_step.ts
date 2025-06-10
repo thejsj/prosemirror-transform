@@ -26,8 +26,12 @@ export class ReplaceStep extends Step {
   }
 
   apply(doc: Node) {
-    if (this.structure && contentBetween(doc, this.from, this.to))
-      return StepResult.fail("Structure replace would overwrite content")
+    if (this.structure && contentBetween(doc, this.from, this.to)) {
+      const content = doc.slice(this.from, this.to).content.toString()
+      return StepResult.fail(
+        `Structure replace would overwrite content: from=${this.from} to=${this.to} content="${content}" slice=${this.slice.content}`
+      )
+    }
     return StepResult.fromReplace(doc, this.from, this.to, this.slice)
   }
 
@@ -107,15 +111,21 @@ export class ReplaceAroundStep extends Step {
   }
 
   apply(doc: Node) {
-    if (this.structure && (contentBetween(doc, this.from, this.gapFrom) ||
-                           contentBetween(doc, this.gapTo, this.to)))
-      return StepResult.fail("Structure gap-replace would overwrite content")
+    if (this.structure) {
+      let beforeGap = contentBetween(doc, this.from, this.gapFrom)
+      let afterGap = contentBetween(doc, this.gapTo, this.to)
+      if (beforeGap || afterGap) {
+        return StepResult.fail(`Structure gap-replace would overwrite content (from: ${this.from} - to: ${this.to} - gapFrom: ${this.gapFrom} - gapTo: ${this.gapTo})
+          Content before gap: ${beforeGap}
+          Content after gap: ${afterGap}`)
+      }
+    }
 
     let gap = doc.slice(this.gapFrom, this.gapTo)
     if (gap.openStart || gap.openEnd)
-      return StepResult.fail("Gap is not a flat range")
+      return StepResult.fail(`Gap is not a flat range (from: ${this.gapFrom}/openStart: ${gap.openStart} - to:${this.gapTo}/openEnd: ${gap.openEnd})`)
     let inserted = this.slice.insertAt(this.insert, gap.content)
-    if (!inserted) return StepResult.fail("Content does not fit in gap")
+    if (!inserted) return StepResult.fail(`Content does not fit in gap (content size: ${gap.content.size}, attempting to insert at position: ${this.insert} in slice of size: ${this.slice.size})`)
     return StepResult.fromReplace(doc, this.from, this.to, inserted)
   }
 
