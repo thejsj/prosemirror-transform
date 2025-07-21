@@ -123,7 +123,7 @@ export class ReplaceAroundStep extends Step {
 
     let gap = doc.slice(this.gapFrom, this.gapTo)
     if (gap.openStart || gap.openEnd)
-      return StepResult.fail(`Gap is not a flat range (from: ${this.gapFrom}/openStart: ${gap.openStart} - to:${this.gapTo}/openEnd: ${gap.openEnd})`)
+      return StepResult.fail(`Gap is not a flat range (from: ${this.gapFrom}/openStart: ${gap.openStart} - to:${this.gapTo}/openEnd: ${gap.openEnd})(Slice: ${doc.slice(this.from, this.to).content.toString()})`)
     let inserted = this.slice.insertAt(this.insert, gap.content)
     if (!inserted) return StepResult.fail(`Content does not fit in gap (content size: ${gap.content.size}, attempting to insert at position: ${this.insert} in slice of size: ${this.slice.size})`)
     return StepResult.fromReplace(doc, this.from, this.to, inserted)

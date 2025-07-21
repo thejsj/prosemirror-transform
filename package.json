@@ -1,5 +1,5 @@
 {
-  "name": "prosemirror-transform",
+  "name": "@hiphipjorge/prosemirror-transform",
   "version": "1.10.4",
   "description": "ProseMirror document transformations",
   "type": "module",
